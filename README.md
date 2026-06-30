@@ -21,8 +21,32 @@ A proof commits, in its public journal, to satisfying a declared policy over con
 `image_id · receipt · journal · data_root · gate_policy · dataset_canonicalization · verdict · strategy_hidden · digest`
 The verifier confirms the cryptographic validity of the receipt **and** that the committed values satisfy the declared policy. See `spec/`.
 
+## Try it
+```bash
+cargo test --all        # runs the conformance suite (pass/ must PASS, fail/ must be rejected)
+
+# check a journal against a gate policy (SPEC.md §2-§3):
+cargo run -p verify-cli -- check-journal examples/policy.json examples/journal_pass.json
+#   PASS  gate_policy=gp_demo_v0_1 digest=0xclean
+cargo run -p verify-cli -- check-journal examples/policy.json examples/journal_fail.json
+#   FAIL  gate_policy=gp_demo_v0_1 digest=0xlookahead
+```
+The policy/journal conformance logic is implemented and tested today. Cryptographic
+receipt verification (the RISC Zero backend) is wired in at milestone M2 behind the
+`risc0` feature — kept off by default so everything builds without a zkVM toolchain.
+
+## Layout
+```
+crates/verifier      reference verifier library (policy · journal · verdict · receipt trait)
+crates/verify-cli    CLI (check-journal subcommand)
+contracts/           EVM verifier contract (M3)
+bindings/ts/         TypeScript/wasm bindings (M2)
+spec/  SPEC.md        gate-policy specification
+vectors/             conformance vectors (pass/ + adversarial fail/)
+```
+
 ## Status
-🚧 Early. Spec v0.1 and conformance vectors land first (milestone M1). Reference verifier (M2), EVM contract (M3), spec v1.0 (M4).
+🚧 Early. M1: spec v0.1 + conformance vectors + policy/journal verifier (**done in this skeleton**). M2: RISC Zero receipt backend + TS/wasm. M3: EVM contract. M4: spec v1.0.
 
 ## License
 Apache-2.0. See [LICENSE](./LICENSE).

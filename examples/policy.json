@@ -1,0 +1,15 @@
+{
+  "spec_version": "0.1",
+  "gate_policy_id": "gp_demo_v0_1",
+  "allowed_image_ids": [
+    "img_demo"
+  ],
+  "data_root": "dr_demo",
+  "dataset_canonicalization": "canon_demo",
+  "required_conditions": [
+    "after_costs",
+    "no_lookahead",
+    "out_of_sample",
+    "walk_forward"
+  ]
+}

@@ -1,0 +1,20 @@
+[package]
+name = "zk-strategy-verify"
+description = "Reference verifier for zero-knowledge integrity-proofs of systematic strategies"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[features]
+default = []
+# Enables the real RISC Zero receipt backend. Wired in milestone M2;
+# kept off by default so the policy/journal logic builds and tests
+# deterministically without a zkVM toolchain.
+risc0 = []

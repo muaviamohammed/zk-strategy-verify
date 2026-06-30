@@ -1,0 +1,9 @@
+{
+  "image_id": "img_demo",
+  "gate_policy": "gp_demo_v0_1",
+  "data_root": "dr_demo",
+  "dataset_canonicalization": "canon_demo",
+  "verdict_pass": false,
+  "strategy_hidden": true,
+  "digest": "0xlookahead"
+}

@@ -1,0 +1,17 @@
+[package]
+name = "verify-cli"
+description = "CLI for the strategy-integrity verifier"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "zk-strategy-verify"
+path = "src/main.rs"
+
+[dependencies]
+zk-strategy-verify = { path = "../verifier" }
+serde = { workspace = true }
+serde_json = { workspace = true }

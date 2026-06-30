@@ -1,0 +1,11 @@
+{
+  "name": "@zk-strategy-verify/verifier",
+  "version": "0.1.0",
+  "description": "TypeScript bindings for the strategy-integrity verifier (milestone M2)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "echo \"M2: wasm-bindgen build of the Rust verifier\" && exit 0"
+  }
+}
