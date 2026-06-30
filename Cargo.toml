@@ -6,7 +6,7 @@ members = ["crates/verifier", "crates/verify-cli"]
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/REPLACE_ME/zk-strategy-verify"
+repository = "https://github.com/muaviamohammed/zk-strategy-verify"
 authors = ["Muavia Mohammed"]
 
 [workspace.dependencies]
