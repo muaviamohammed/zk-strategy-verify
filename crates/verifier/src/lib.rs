@@ -6,6 +6,36 @@
 //! The crate is generic over a [`ReceiptVerifier`] so the policy/journal logic is
 //! testable deterministically without a zkVM; the RISC Zero backend is wired in at
 //! milestone M2 behind the `risc0` feature.
+//!
+//! # Example
+//!
+//! Check a decoded journal against a gate policy (the SPEC.md §2–§3 checks):
+//!
+//! ```
+//! use zk_strategy_verify::{Condition, GatePolicy, Journal};
+//!
+//! let policy = GatePolicy {
+//!     spec_version: "0.1".into(),
+//!     gate_policy_id: "gp".into(),
+//!     allowed_image_ids: vec!["img".into()],
+//!     data_root: "dr".into(),
+//!     dataset_canonicalization: "canon".into(),
+//!     required_conditions: vec![Condition::AfterCosts, Condition::NoLookahead],
+//! };
+//!
+//! let journal = Journal {
+//!     image_id: "img".into(),
+//!     gate_policy: "gp".into(),
+//!     data_root: "dr".into(),
+//!     dataset_canonicalization: "canon".into(),
+//!     verdict_pass: true,
+//!     strategy_hidden: true,
+//!     digest: "0x1".into(),
+//! };
+//!
+//! let report = policy.evaluate(&journal).expect("conforms to policy");
+//! assert!(report.is_pass());
+//! ```
 
 pub mod error;
 pub mod journal;

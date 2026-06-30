@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/muaviamohammed/zk-strategy-verify/spec/gate_policy.schema.json",
+  "title": "Gate Policy",
+  "description": "A versioned policy a verifier checks a proof journal against. See SPEC.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spec_version",
+    "gate_policy_id",
+    "allowed_image_ids",
+    "data_root",
+    "dataset_canonicalization",
+    "required_conditions"
+  ],
+  "properties": {
+    "spec_version": {
+      "type": "string",
+      "description": "Version of the gate-policy specification this policy targets.",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "gate_policy_id": {
+      "type": "string",
+      "description": "Identifier/hash of the policy as evaluated in-circuit; must equal journal.gate_policy.",
+      "minLength": 1
+    },
+    "allowed_image_ids": {
+      "type": "array",
+      "description": "Guest image ids whose receipts are accepted.",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "data_root": {
+      "type": "string",
+      "description": "Required dataset commitment; must equal journal.data_root.",
+      "minLength": 1
+    },
+    "dataset_canonicalization": {
+      "type": "string",
+      "description": "Required canonicalization commitment; must equal journal.dataset_canonicalization.",
+      "minLength": 1
+    },
+    "required_conditions": {
+      "type": "array",
+      "description": "Integrity conditions this policy requires.",
+      "items": {
+        "type": "string",
+        "enum": ["after_costs", "no_lookahead", "out_of_sample", "walk_forward"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  }
+}

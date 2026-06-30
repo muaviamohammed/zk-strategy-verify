@@ -72,3 +72,87 @@ impl GatePolicy {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::VerifyError;
+
+    fn policy() -> GatePolicy {
+        GatePolicy {
+            spec_version: "0.1".into(),
+            gate_policy_id: "gp".into(),
+            allowed_image_ids: vec!["img".into()],
+            data_root: "dr".into(),
+            dataset_canonicalization: "canon".into(),
+            required_conditions: vec![Condition::AfterCosts, Condition::NoLookahead],
+        }
+    }
+
+    fn journal() -> Journal {
+        Journal {
+            image_id: "img".into(),
+            gate_policy: "gp".into(),
+            data_root: "dr".into(),
+            dataset_canonicalization: "canon".into(),
+            verdict_pass: true,
+            strategy_hidden: true,
+            digest: "0x1".into(),
+        }
+    }
+
+    #[test]
+    fn conforming_journal_passes() {
+        let report = policy().evaluate(&journal()).unwrap();
+        assert!(report.is_pass());
+        assert_eq!(report.gate_policy_id, "gp");
+    }
+
+    #[test]
+    fn negative_in_circuit_verdict_fails_not_errors() {
+        let mut j = journal();
+        j.verdict_pass = false;
+        let report = policy().evaluate(&j).unwrap();
+        assert!(!report.is_pass());
+    }
+
+    #[test]
+    fn revealed_strategy_is_rejected() {
+        let mut j = journal();
+        j.strategy_hidden = false;
+        assert!(matches!(
+            policy().evaluate(&j),
+            Err(VerifyError::StrategyRevealed)
+        ));
+    }
+
+    #[test]
+    fn policy_mismatch_is_rejected() {
+        let mut j = journal();
+        j.gate_policy = "other".into();
+        assert!(matches!(
+            policy().evaluate(&j),
+            Err(VerifyError::PolicyMismatch { .. })
+        ));
+    }
+
+    #[test]
+    fn dataset_mismatch_is_rejected() {
+        let mut j = journal();
+        j.data_root = "other".into();
+        assert!(matches!(
+            policy().evaluate(&j),
+            Err(VerifyError::DatasetMismatch)
+        ));
+    }
+
+    #[test]
+    fn canonicalization_mismatch_is_rejected() {
+        let mut j = journal();
+        j.dataset_canonicalization = "other".into();
+        assert!(matches!(
+            policy().evaluate(&j),
+            Err(VerifyError::CanonicalizationMismatch)
+        ));
+    }
+}
