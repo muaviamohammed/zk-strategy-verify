@@ -25,6 +25,12 @@ pub enum VerifyError {
     #[error("strategy_hidden is false: a conforming proof must not reveal the strategy")]
     StrategyRevealed,
 
+    #[error("unsupported credential format version {found} (this verifier implements up to {max_supported})")]
+    UnsupportedFormatVersion { found: u16, max_supported: u16 },
+
+    #[error("policy requires intrabar risk marking but the journal is close-marked (intrabar_marked=false)")]
+    IntrabarRiskRequired,
+
     #[error("receipt verification not yet implemented (enable the `risc0` feature, milestone M2)")]
     Unimplemented,
 }

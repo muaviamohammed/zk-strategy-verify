@@ -10,6 +10,18 @@ adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - M3: EVM verifier contract with a worked testnet example.
 - M4: spec v1.0 (audit-ready).
 
+## [0.2.0] — 2026-07-06
+### Added
+- **Credential format versioning.** Journal commits `format_version`; a verifier rejects a version it does not implement (fail-closed forward-incompatibility). SPEC.md §5.
+- **`intrabar_risk` condition (v2).** Drawdown/worst-bar marked against the adverse intrabar extreme at leverage; a policy requiring it rejects a close-marked (`intrabar_marked = false`) journal.
+- **`annualization_bound` condition (v2).** Annualization basis bound in-circuit to committed bar/print timestamps — closes a prover-chosen-periods Sharpe forge on both price and carry paths.
+- New adversarial conformance vectors: `future_format_version`, `intrabar_required_but_close_marked`. New positive vector: `v1_close_marked` (backward compatibility).
+### Changed
+- Journal schema gains `format_version` (default 1) and `intrabar_marked` (default false) — v1 journals deserialize unchanged and remain verifiable under a v1 policy.
+- SPEC.md → v0.2; gate-policy JSON Schema condition enum extended.
+### Notes
+- Conditions 5–6 were added after an adversarial review of the reference engine surfaced both as real soundness gaps; encoding them as normative conditions is intentional.
+
 ## [0.1.0] — 2026-06-30
 ### Added
 - Gate-policy specification v0.1 (`SPEC.md`) and JSON Schema (`spec/gate_policy.schema.json`).

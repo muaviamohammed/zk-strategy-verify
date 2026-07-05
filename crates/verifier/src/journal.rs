@@ -19,8 +19,25 @@ pub struct Journal {
     pub verdict_pass: bool,
     /// Assertion that no strategy parameters are revealed in the journal.
     pub strategy_hidden: bool,
+    /// Credential format version committed in-circuit (SPEC.md §5). A verifier
+    /// MUST reject a version it does not implement rather than misinterpret the
+    /// journal. `1` = close-marked risk; `2` adds OHLC/intrabar marking and the
+    /// bound annualization basis. Absent in a v1 journal → deserializes to `1`.
+    #[serde(default = "default_format_version")]
+    pub format_version: u16,
+    /// True iff drawdown / worst-bar were marked against real intrabar extremes
+    /// (OHLC data). False = close-marked risk (no intrabar information). The
+    /// verifier surfaces this so close-marked risk is never mistaken for
+    /// intrabar-marked risk. Absent in a v1 journal → `false`.
+    #[serde(default)]
+    pub intrabar_marked: bool,
     /// Overall commitment binding the journal.
     pub digest: String,
+}
+
+/// v1 journals predate the `format_version` field; a missing value means v1.
+fn default_format_version() -> u16 {
+    1
 }
 
 impl Journal {

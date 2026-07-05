@@ -5,7 +5,7 @@
     "allowed_image_ids": ["img_demo"],
     "data_root": "dr_demo",
     "dataset_canonicalization": "canon_demo",
-    "required_conditions": ["after_costs", "no_lookahead", "out_of_sample", "walk_forward", "intrabar_risk", "annualization_bound"]
+    "required_conditions": ["after_costs", "no_lookahead", "intrabar_risk"]
   },
   "journal": {
     "image_id": "img_demo",
@@ -15,7 +15,7 @@
     "verdict_pass": true,
     "strategy_hidden": true,
     "format_version": 2,
-    "intrabar_marked": true,
-    "digest": "0xclean"
+    "intrabar_marked": false,
+    "digest": "0xclosemarked"
   }
 }

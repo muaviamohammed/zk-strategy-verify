@@ -30,6 +30,8 @@
 //!     dataset_canonicalization: "canon".into(),
 //!     verdict_pass: true,
 //!     strategy_hidden: true,
+//!     format_version: 2,
+//!     intrabar_marked: true,
 //!     digest: "0x1".into(),
 //! };
 //!

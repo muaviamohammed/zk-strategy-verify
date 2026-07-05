@@ -1,9 +1,11 @@
 {
   "image_id": "img_demo",
-  "gate_policy": "gp_demo_v0_1",
+  "gate_policy": "gp_demo_v0_2",
   "data_root": "dr_demo",
   "dataset_canonicalization": "canon_demo",
   "verdict_pass": true,
   "strategy_hidden": true,
+  "format_version": 2,
+  "intrabar_marked": true,
   "digest": "0xclean"
 }
