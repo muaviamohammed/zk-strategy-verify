@@ -32,6 +32,14 @@ pub enum Condition {
     /// Answers the allocator's "what am I actually exposed to?" without
     /// revealing the strategy.
     ExposureDisclosed,
+    /// The committed cost model meets the protocol floor: fee ≥ 7 bps and
+    /// slippage ≥ 3 bps per position change. Understated costs are a forge
+    /// vector (they resurrect dead edges), so a conforming verifier refuses
+    /// sub-floor costs; fee relaxation exists only OUT-OF-BAND against an
+    /// issuer-attested institutional fee schedule, and the slippage floor is
+    /// never waivable — fill quality cannot be documented, only proven from
+    /// live fills.
+    CostFloor,
     /// (v4, disclosure tier) The journal carries regime-conditional performance
     /// under a PINNED regime policy (protocol constant): the prover cannot
     /// choose the bucketing that flatters the strategy, and labels are
@@ -44,6 +52,10 @@ pub enum Condition {
 /// 100-bar trend state, labels strictly causal. A journal claiming any other
 /// regime policy is rejected — bucket-shopping is a forgery class, not a choice.
 pub const PINNED_REGIME_POLICY_ID: &str = "vol30-trend100";
+
+/// Protocol cost floor (SPEC.md §3.9): minimum committed fee / slippage in bps.
+pub const COST_FLOOR_FEE_BPS: i64 = 7;
+pub const COST_FLOOR_SLIPPAGE_BPS: i64 = 3;
 
 /// Highest credential format version this verifier implements. A journal
 /// declaring a newer format is REJECTED (not misread) — see SPEC.md §5.
@@ -100,6 +112,16 @@ impl GatePolicy {
         // attest it — a close-marked journal cannot satisfy an intrabar policy.
         if self.required_conditions.contains(&Condition::IntrabarRisk) && !journal.intrabar_marked {
             return Err(VerifyError::IntrabarRiskRequired);
+        }
+        // A policy that requires the cost floor refuses understated costs.
+        if self.required_conditions.contains(&Condition::CostFloor)
+            && (journal.fee_bps < COST_FLOOR_FEE_BPS
+                || journal.slippage_bps < COST_FLOOR_SLIPPAGE_BPS)
+        {
+            return Err(VerifyError::CostFloorViolated {
+                fee_bps: journal.fee_bps,
+                slippage_bps: journal.slippage_bps,
+            });
         }
         // (v3, disclosure tier) A policy that requires the exposure card must
         // find one, over a known window, and it must be internally consistent.
@@ -176,6 +198,8 @@ mod tests {
             strategy_hidden: true,
             format_version: 2,
             intrabar_marked: true,
+            fee_bps: 7,
+            slippage_bps: 3,
             window_bars: 0,
             exposure_card: None,
             regime_panel: None,
@@ -384,5 +408,35 @@ mod tests {
         // (no disclosure conditions) remains fully verifiable
         let report = policy().evaluate(&journal()).unwrap();
         assert!(report.is_pass());
+    }
+
+    #[test]
+    fn understated_costs_are_rejected() {
+        let mut p = policy();
+        p.required_conditions.push(Condition::CostFloor);
+        let mut j = journal();
+        j.fee_bps = 1; // below the 7 bps floor
+        assert!(matches!(
+            p.evaluate(&j),
+            Err(VerifyError::CostFloorViolated { .. })
+        ));
+        // harsher-than-floor costs pass
+        j.fee_bps = 20;
+        j.slippage_bps = 10;
+        assert!(p.evaluate(&j).unwrap().is_pass());
+    }
+
+    #[test]
+    fn legacy_journal_without_cost_fields_meets_the_floor() {
+        // pre-cost-disclosure journals were minted AT the floor by construction
+        let raw = r#"{"image_id":"img","gate_policy":"gp","data_root":"dr",
+            "dataset_canonicalization":"canon","verdict_pass":true,
+            "strategy_hidden":true,"digest":"0x1"}"#;
+        let j = Journal::from_bytes(raw.as_bytes()).unwrap();
+        assert_eq!(j.fee_bps, COST_FLOOR_FEE_BPS);
+        assert_eq!(j.slippage_bps, COST_FLOOR_SLIPPAGE_BPS);
+        let mut p = policy();
+        p.required_conditions.push(Condition::CostFloor);
+        assert!(p.evaluate(&j).unwrap().is_pass());
     }
 }

@@ -10,6 +10,18 @@ adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - M3: EVM verifier contract with a worked testnet example.
 - M4: spec v1.0 (audit-ready).
 
+## [0.3.1] — 2026-07-12
+### Added
+- **`cost_floor` condition (SPEC §3.9).** Committed costs must meet the protocol
+  floor (fee ≥ 7 bps, slippage ≥ 3 bps per position change). Up-only for provers —
+  harsher costs strengthen a credential; understated costs are refused as a forge
+  vector. Fee relaxation exists only out-of-band against an issuer-attested
+  institutional fee schedule; the slippage floor is never waivable.
+- Journal gains `fee_bps` / `slippage_bps` (absent → legacy default = the floor,
+  since pre-disclosure journals were minted at the floor by construction).
+- Vectors — pass vector now commits explicit harsher-than-floor costs; new fail
+  vector: `cost_floor_understated`.
+
 ## [0.3.0] — 2026-07-12
 ### Added
 - **Disclosure tier (SPEC §3.7–3.8).** Two opt-in, allocator-facing conditions:
@@ -54,6 +66,7 @@ adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - CI: fmt · clippy (`-D warnings`) · build · test.
 - Project docs: README, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT.
 
-[Unreleased]: https://github.com/muaviamohammed/zk-strategy-verify/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/muaviamohammed/zk-strategy-verify/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/muaviamohammed/zk-strategy-verify/releases/tag/v0.3.1
 [0.3.0]: https://github.com/muaviamohammed/zk-strategy-verify/releases/tag/v0.3.0
 [0.1.0]: https://github.com/muaviamohammed/zk-strategy-verify/releases/tag/v0.1.0

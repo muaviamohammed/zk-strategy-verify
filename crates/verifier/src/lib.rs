@@ -32,6 +32,8 @@
 //!     strategy_hidden: true,
 //!     format_version: 2,
 //!     intrabar_marked: true,
+//!     fee_bps: 7,
+//!     slippage_bps: 3,
 //!     window_bars: 0,
 //!     exposure_card: None,
 //!     regime_panel: None,

@@ -120,8 +120,24 @@ pub struct Journal {
     /// regime policy. `None` for output-minimized credentials.
     #[serde(default)]
     pub regime_panel: Option<RegimePanel>,
+    /// Committed fee (bps per position change) applied inside the proof.
+    /// Absent in a pre-cost-disclosure journal → defaults to the protocol
+    /// floor (legacy journals were minted AT the floor by construction).
+    #[serde(default = "default_fee_bps")]
+    pub fee_bps: i64,
+    /// Committed slippage (bps per position change). Same legacy default.
+    #[serde(default = "default_slippage_bps")]
+    pub slippage_bps: i64,
     /// Overall commitment binding the journal.
     pub digest: String,
+}
+
+/// Protocol cost floor (SPEC.md §3.9). Legacy journals default to it.
+fn default_fee_bps() -> i64 {
+    crate::policy::COST_FLOOR_FEE_BPS
+}
+fn default_slippage_bps() -> i64 {
+    crate::policy::COST_FLOOR_SLIPPAGE_BPS
 }
 
 /// v1 journals predate the `format_version` field; a missing value means v1.

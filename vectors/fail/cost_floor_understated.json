@@ -70,8 +70,8 @@
         }
       ]
     },
-    "digest": "0xv4disclosing",
-    "fee_bps": 14,
-    "slippage_bps": 6
+    "digest": "0xcheapcosts",
+    "fee_bps": 1,
+    "slippage_bps": 0
   }
 }

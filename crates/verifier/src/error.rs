@@ -48,6 +48,9 @@ pub enum VerifyError {
     #[error("regime panel is inconsistent (bucket count or bar accounting violated)")]
     RegimePanelInconsistent,
 
+    #[error("committed costs below the protocol floor (fee {fee_bps} bps / slippage {slippage_bps} bps; floor 7+3) — understated costs are a forge vector")]
+    CostFloorViolated { fee_bps: i64, slippage_bps: i64 },
+
     #[error("receipt verification not yet implemented (enable the `risc0` feature, milestone M2)")]
     Unimplemented,
 }
