@@ -26,11 +26,28 @@ pub enum Condition {
     /// be inflated to forge a passing Sharpe. Bundles both the price-path
     /// binding and the timestamped-funding carry binding.
     AnnualizationBound,
+    /// (v3, disclosure tier) The journal carries an in-circuit exposure card —
+    /// net/gross bands, leverage rail, instrument count, and long/short/flat
+    /// bar accounting — derived from the SAME position series as the P&L.
+    /// Answers the allocator's "what am I actually exposed to?" without
+    /// revealing the strategy.
+    ExposureDisclosed,
+    /// (v4, disclosure tier) The journal carries regime-conditional performance
+    /// under a PINNED regime policy (protocol constant): the prover cannot
+    /// choose the bucketing that flatters the strategy, and labels are
+    /// strictly causal. Answers "what should I expect from this strategy in
+    /// the current regime?".
+    RegimePinned,
 }
+
+/// The pinned regime policy (SPEC.md §3.8): 30-bar trailing-vol terciles ×
+/// 100-bar trend state, labels strictly causal. A journal claiming any other
+/// regime policy is rejected — bucket-shopping is a forgery class, not a choice.
+pub const PINNED_REGIME_POLICY_ID: &str = "vol30-trend100";
 
 /// Highest credential format version this verifier implements. A journal
 /// declaring a newer format is REJECTED (not misread) — see SPEC.md §5.
-pub const MAX_SUPPORTED_FORMAT_VERSION: u16 = 2;
+pub const MAX_SUPPORTED_FORMAT_VERSION: u16 = 4;
 
 /// A versioned gate policy. The verifier checks a decoded [`Journal`] against this.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -84,6 +101,38 @@ impl GatePolicy {
         if self.required_conditions.contains(&Condition::IntrabarRisk) && !journal.intrabar_marked {
             return Err(VerifyError::IntrabarRiskRequired);
         }
+        // (v3, disclosure tier) A policy that requires the exposure card must
+        // find one, over a known window, and it must be internally consistent.
+        if self
+            .required_conditions
+            .contains(&Condition::ExposureDisclosed)
+        {
+            match &journal.exposure_card {
+                None => return Err(VerifyError::ExposureCardRequired),
+                Some(card) => {
+                    if journal.window_bars == 0 || !card.is_consistent(journal.window_bars) {
+                        return Err(VerifyError::ExposureCardInconsistent);
+                    }
+                }
+            }
+        }
+        // (v4, disclosure tier) A policy that requires the regime panel must
+        // find one under the PINNED policy — any other bucketing is rejected.
+        if self.required_conditions.contains(&Condition::RegimePinned) {
+            match &journal.regime_panel {
+                None => return Err(VerifyError::RegimePanelRequired),
+                Some(panel) => {
+                    if panel.policy_id != PINNED_REGIME_POLICY_ID {
+                        return Err(VerifyError::RegimePolicyNotPinned {
+                            found: panel.policy_id.clone(),
+                        });
+                    }
+                    if journal.window_bars == 0 || !panel.is_consistent(journal.window_bars) {
+                        return Err(VerifyError::RegimePanelInconsistent);
+                    }
+                }
+            }
+        }
 
         let verdict = if journal.verdict_pass {
             Verdict::Pass
@@ -104,6 +153,7 @@ impl GatePolicy {
 mod tests {
     use super::*;
     use crate::error::VerifyError;
+    use crate::journal::{ExposureCard, RegimeBucket, RegimePanel};
 
     fn policy() -> GatePolicy {
         GatePolicy {
@@ -126,8 +176,54 @@ mod tests {
             strategy_hidden: true,
             format_version: 2,
             intrabar_marked: true,
+            window_bars: 0,
+            exposure_card: None,
+            regime_panel: None,
             digest: "0x1".into(),
         }
+    }
+
+    fn card() -> ExposureCard {
+        ExposureCard {
+            net_avg_x100: 55,
+            net_min_x100: 0,
+            net_max_x100: 100,
+            gross_avg_x100: 55,
+            gross_max_x100: 100,
+            leverage_cap_x100: 100,
+            instruments: 1,
+            bars_long: 606,
+            bars_short: 0,
+            bars_flat: 490,
+        }
+    }
+
+    fn panel() -> RegimePanel {
+        RegimePanel {
+            policy_id: PINNED_REGIME_POLICY_ID.into(),
+            buckets: (0..6)
+                .map(|i| RegimeBucket {
+                    mean_return_bps_x100: i * 100,
+                    bars: 160,
+                })
+                .collect(),
+        }
+    }
+
+    fn disclosing_journal() -> Journal {
+        let mut j = journal();
+        j.format_version = 4;
+        j.window_bars = 1096;
+        j.exposure_card = Some(card());
+        j.regime_panel = Some(panel());
+        j
+    }
+
+    fn disclosing_policy() -> GatePolicy {
+        let mut p = policy();
+        p.required_conditions
+            .extend([Condition::ExposureDisclosed, Condition::RegimePinned]);
+        p
     }
 
     #[test]
@@ -220,5 +316,73 @@ mod tests {
         assert_eq!(j.format_version, 1);
         assert!(!j.intrabar_marked);
         assert!(policy().evaluate(&j).unwrap().is_pass());
+    }
+
+    #[test]
+    fn disclosing_journal_passes_disclosure_policy() {
+        let report = disclosing_policy().evaluate(&disclosing_journal()).unwrap();
+        assert!(report.is_pass());
+    }
+
+    #[test]
+    fn disclosure_policy_rejects_missing_exposure_card() {
+        let mut j = disclosing_journal();
+        j.exposure_card = None;
+        assert!(matches!(
+            disclosing_policy().evaluate(&j),
+            Err(VerifyError::ExposureCardRequired)
+        ));
+    }
+
+    #[test]
+    fn inconsistent_exposure_card_is_rejected() {
+        let mut j = disclosing_journal();
+        // bar accounting no longer covers the window
+        j.exposure_card.as_mut().unwrap().bars_flat = 0;
+        assert!(matches!(
+            disclosing_policy().evaluate(&j),
+            Err(VerifyError::ExposureCardInconsistent)
+        ));
+    }
+
+    #[test]
+    fn gross_exceeding_leverage_rail_is_rejected() {
+        let mut j = disclosing_journal();
+        j.exposure_card.as_mut().unwrap().gross_max_x100 = 200; // rail is 100
+        assert!(matches!(
+            disclosing_policy().evaluate(&j),
+            Err(VerifyError::ExposureCardInconsistent)
+        ));
+    }
+
+    #[test]
+    fn shopped_regime_policy_is_rejected() {
+        let mut j = disclosing_journal();
+        j.regime_panel.as_mut().unwrap().policy_id = "vol10-trend20-custom".into();
+        assert!(matches!(
+            disclosing_policy().evaluate(&j),
+            Err(VerifyError::RegimePolicyNotPinned { .. })
+        ));
+    }
+
+    #[test]
+    fn regime_panel_overclaiming_bars_is_rejected() {
+        let mut j = disclosing_journal();
+        // 6 × 300 = 1800 labelled bars > 1096-bar window
+        for b in &mut j.regime_panel.as_mut().unwrap().buckets {
+            b.bars = 300;
+        }
+        assert!(matches!(
+            disclosing_policy().evaluate(&j),
+            Err(VerifyError::RegimePanelInconsistent)
+        ));
+    }
+
+    #[test]
+    fn minimal_journal_still_passes_base_policy() {
+        // disclosure is OPT-IN: a PASS/FAIL-only journal under a base policy
+        // (no disclosure conditions) remains fully verifiable
+        let report = policy().evaluate(&journal()).unwrap();
+        assert!(report.is_pass());
     }
 }

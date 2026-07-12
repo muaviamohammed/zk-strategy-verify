@@ -32,6 +32,9 @@
 //!     strategy_hidden: true,
 //!     format_version: 2,
 //!     intrabar_marked: true,
+//!     window_bars: 0,
+//!     exposure_card: None,
+//!     regime_panel: None,
 //!     digest: "0x1".into(),
 //! };
 //!
@@ -46,8 +49,8 @@ pub mod receipt;
 pub mod verdict;
 
 pub use error::VerifyError;
-pub use journal::Journal;
-pub use policy::{Condition, GatePolicy};
+pub use journal::{ExposureCard, Journal, RegimeBucket, RegimePanel};
+pub use policy::{Condition, GatePolicy, PINNED_REGIME_POLICY_ID};
 pub use receipt::ReceiptVerifier;
 pub use verdict::{Verdict, VerificationReport};
 

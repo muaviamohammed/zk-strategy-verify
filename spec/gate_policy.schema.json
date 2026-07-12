@@ -46,7 +46,7 @@
       "description": "Integrity conditions this policy requires.",
       "items": {
         "type": "string",
-        "enum": ["after_costs", "no_lookahead", "out_of_sample", "walk_forward", "intrabar_risk", "annualization_bound"]
+        "enum": ["after_costs", "no_lookahead", "out_of_sample", "walk_forward", "intrabar_risk", "annualization_bound", "exposure_disclosed", "regime_pinned"]
       },
       "minItems": 1,
       "uniqueItems": true

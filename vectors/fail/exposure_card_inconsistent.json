@@ -1,0 +1,74 @@
+{
+  "policy": {
+    "spec_version": "0.3",
+    "gate_policy_id": "gp_demo_v0_3",
+    "allowed_image_ids": [
+      "img_demo"
+    ],
+    "data_root": "dr_demo",
+    "dataset_canonicalization": "canon_demo",
+    "required_conditions": [
+      "after_costs",
+      "no_lookahead",
+      "out_of_sample",
+      "walk_forward",
+      "intrabar_risk",
+      "annualization_bound",
+      "exposure_disclosed",
+      "regime_pinned"
+    ]
+  },
+  "journal": {
+    "image_id": "img_demo",
+    "gate_policy": "gp_demo_v0_3",
+    "data_root": "dr_demo",
+    "dataset_canonicalization": "canon_demo",
+    "verdict_pass": true,
+    "strategy_hidden": true,
+    "format_version": 4,
+    "intrabar_marked": true,
+    "window_bars": 1096,
+    "exposure_card": {
+      "net_avg_x100": 55,
+      "net_min_x100": 0,
+      "net_max_x100": 100,
+      "gross_avg_x100": 55,
+      "gross_max_x100": 250,
+      "leverage_cap_x100": 100,
+      "instruments": 1,
+      "bars_long": 606,
+      "bars_short": 0,
+      "bars_flat": 0
+    },
+    "regime_panel": {
+      "policy_id": "vol30-trend100",
+      "buckets": [
+        {
+          "mean_return_bps_x100": 400,
+          "bars": 108
+        },
+        {
+          "mean_return_bps_x100": 2300,
+          "bars": 226
+        },
+        {
+          "mean_return_bps_x100": 800,
+          "bars": 116
+        },
+        {
+          "mean_return_bps_x100": 1000,
+          "bars": 216
+        },
+        {
+          "mean_return_bps_x100": 0,
+          "bars": 109
+        },
+        {
+          "mean_return_bps_x100": 1300,
+          "bars": 221
+        }
+      ]
+    },
+    "digest": "0xbadcard"
+  }
+}

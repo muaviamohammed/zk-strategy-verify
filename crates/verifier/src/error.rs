@@ -31,6 +31,23 @@ pub enum VerifyError {
     #[error("policy requires intrabar risk marking but the journal is close-marked (intrabar_marked=false)")]
     IntrabarRiskRequired,
 
+    #[error("policy requires exposure disclosure but the journal carries no exposure card")]
+    ExposureCardRequired,
+
+    #[error(
+        "exposure card is inconsistent (bar accounting, band ordering, or leverage rail violated)"
+    )]
+    ExposureCardInconsistent,
+
+    #[error("policy requires the pinned regime panel but the journal carries none")]
+    RegimePanelRequired,
+
+    #[error("regime policy '{found}' is not the pinned policy — bucket-shopping is rejected")]
+    RegimePolicyNotPinned { found: String },
+
+    #[error("regime panel is inconsistent (bucket count or bar accounting violated)")]
+    RegimePanelInconsistent,
+
     #[error("receipt verification not yet implemented (enable the `risc0` feature, milestone M2)")]
     Unimplemented,
 }

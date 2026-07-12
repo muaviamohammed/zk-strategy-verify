@@ -3,7 +3,7 @@
 [![CI](https://github.com/muaviamohammed/zk-strategy-verify/actions/workflows/ci.yml/badge.svg)](https://github.com/muaviamohammed/zk-strategy-verify/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org)
-[![Status: v0.2.0](https://img.shields.io/badge/status-v0.2.0_spec_draft-yellow.svg)](./SPEC.md)
+[![Status: v0.2.0](https://img.shields.io/badge/status-v0.3.0_spec_draft-yellow.svg)](./SPEC.md)
 
 An open standard and reference implementation for **verifying zero-knowledge proofs that a hidden systematic strategy satisfies a fixed set of integrity conditions** — without revealing the strategy.
 
@@ -13,7 +13,7 @@ A verifier *checks* a proof; it does not generate one and learns nothing about t
 
 ## Why
 
-Generating a plausible-looking quantitative track record is now effectively free — an LLM can emit ten thousand perfect-looking backtests before lunch. On-chain asset managers, vaults, and RWA protocols increasingly need to gate capital on proof that a strategy meets fixed honesty conditions — **after costs, no lookahead, out-of-sample, walk-forward, intrabar-honest risk, and a tamper-bound annualization basis** — *without* forcing disclosure of the strategy. There is no shared, open standard to verify such a claim. This repository defines one.
+Generating a plausible-looking quantitative track record is now effectively free — an LLM can emit ten thousand perfect-looking backtests before lunch. On-chain asset managers, vaults, and RWA protocols increasingly need to gate capital on proof that a strategy meets fixed honesty conditions — **after costs, no lookahead, out-of-sample, walk-forward, intrabar-honest risk, a tamper-bound annualization basis — and, opt-in, disclosed exposure and pinned-regime performance** — *without* forcing disclosure of the strategy. There is no shared, open standard to verify such a claim. This repository defines one.
 
 ## How it works
 
